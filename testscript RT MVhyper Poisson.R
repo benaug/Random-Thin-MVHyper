@@ -6,9 +6,10 @@ source("NimbleFunctionsRT MVhyper Poisson.R")
 source("init.RT.MVhyper.R")
 source("sSampler.R")
 
-#must run this line!
-nimble:::setNimbleOption('MCMCjointlySamplePredictiveBranches', FALSE)
-nimbleOptions('MCMCjointlySamplePredictiveBranches') 
+#If using Nimble version 0.13.1 and you must run this line 
+nimbleOptions(determinePredictiveNodesInModel = FALSE)
+# #If using Nimble before version 0.13.1, run this line instead
+# nimble:::setNimbleOption('MCMCjointlySamplePredictiveBranches', FALSE)
 
 ####Simulate some data####
 N=50
@@ -50,7 +51,7 @@ Niminits <- list(z=nimbuild$z,s=nimbuild$s,ID=nimbuild$ID,capcounts=rowSums(nimb
 
 #constants for Nimble
 J=nrow(data$X)
-constants<-list(M=M,J=J,K=K,K2D=K2D,n.samples=nimbuild$n.samples,xlim=data$xlim,ylim=data$ylim,n.select=n.select)
+constants<-list(M=M,J=J,K=K,K2D=K2D,n.samples=nimbuild$n.samples,xlim=data$xlim,ylim=data$ylim)
 
 # Supply data to Nimble. Note, y.true is completely latent.
 z.data=c(rep(1,data$n.ID),rep(NA,M-data$n.ID))
@@ -69,6 +70,8 @@ nt2=50#thin more
 start.time<-Sys.time()
 Rmodel <- nimbleModel(code=NimModel, constants=constants, data=Nimdata,check=FALSE,
                       inits=Niminits)
+#can use "nodes" argument in configureMCMC below to omit y.true that is replaced below for faster
+#configuration
 conf <- configureMCMC(Rmodel,monitors=parameters, thin=nt,
                       monitors2=parameters2,thin2=nt2,useConjugacy = TRUE) 
 
