@@ -12,23 +12,23 @@ nimbleOptions(determinePredictiveNodesInModel = FALSE)
 # nimble:::setNimbleOption('MCMCjointlySamplePredictiveBranches', FALSE)
 
 ####Simulate some data####
-N=50
+N <- 50
 #detection parameters
-p0.p=0.35
-p0.c=0.85
-sigma=0.5
-lambda=1 #count parameter given detection
+p0.p <- 0.35
+p0.c <- 0.85
+sigma <- 0.5
+lambda <- 1 #count parameter given detection
 
 #estimate of mean counts/capture event for lambda
 mean(VGAM::rzapois(10000,lambda,pobs0=0))
 #pmf for counts of 1:10
 round(VGAM::dzapois(1:10,lambda,pobs0=0),2)
 
-K=5 #number of occasions
-buff=3 #state space buffer
+K <- 5 #number of occasions
+buff <- 3 #state space buffer
 X<- expand.grid(3:11,3:11) #make a trapping array
-n.select=1 #samples to choose per trap/occasion
-data=sim.RT.MVhyper.Mb(N=N,p0.p=p0.p,p0.c=p0.c,sigma=sigma,lambda=lambda,
+n.select <- 1 #samples to choose per trap/occasion
+data <- sim.RT.MVhyper.Mb(N=N,p0.p=p0.p,p0.c=p0.c,sigma=sigma,lambda=lambda,
                        K=K,X=X,buff=buff,n.select=n.select,obstype="hurdleZTPois")
 
 #What is the observed data?
@@ -41,16 +41,16 @@ sum(data$y.ID)/sum(data$y.true)
 
 ##Fit model in Nimble##
 #data augmentation level
-M=150
+M <- 150
 
-J=nrow(X) #number of detectors
-K2D=data$K2D #pull out trap operation
+J <- nrow(X) #number of detectors
+K2D <- data$K2D #pull out trap operation
 
-inits=list(p0.p=0.5,p0.c=0.5,sigma=0.25,lambda=1) #ballpark inits to build data
+inits <- list(p0.p=0.5,p0.c=0.5,sigma=0.25,lambda=1) #ballpark inits to build data
 
 #This function structures the simulated data to fit the model in Nimble (some more restructing below)
 #Also checks some inits
-nimbuild=init.RT.MVhyper.Mb(data,inits,M=M,obstype="hurdleZTPois")
+nimbuild <- init.RT.MVhyper.Mb(data,inits,M=M,obstype="hurdleZTPois")
 
 #inits for nimble
 Niminits <- list(z=nimbuild$z,s=nimbuild$s,ID=nimbuild$ID,capcounts=rowSums(nimbuild$y.true),
@@ -58,30 +58,33 @@ Niminits <- list(z=nimbuild$z,s=nimbuild$s,ID=nimbuild$ID,capcounts=rowSums(nimb
                  sigma=inits$sigma,p0.p=inits$p0.p,p0.c=inits$p0.c,lambda=inits$lambda)
 
 #constants for Nimble
-J=nrow(data$X)
-constants<-list(M=M,J=J,K=K,K2D=K2D,n.samples=nimbuild$n.samples,xlim=data$xlim,ylim=data$ylim)
+J <- nrow(data$X)
+constants <- list(M=M,J=J,K=K,K2D=K2D,n.samples=nimbuild$n.samples,xlim=data$xlim,ylim=data$ylim)
 
 # Supply data to Nimble. Note, y.true is completely latent.
 z.data=c(rep(1,data$n.ID),rep(NA,M-data$n.ID))
 
-Nimdata<-list(y.true=array(NA,dim=c(M,J,K)),y.state=array(NA,dim=c(M,J,K)),
+Nimdata <- list(y.true=array(NA,dim=c(M,J,K)),y.state=array(NA,dim=c(M,J,K)),
               ID=rep(NA,nimbuild$n.samples),z=z.data,X=as.matrix(X),capcounts=rep(NA,M))
 
 # set parameters to monitor
-parameters<-c('psi','p0.p','p0.c','lambda','sigma','N','n')
-nt=1 #thinning rate
+parameters <- c('psi','p0.p','p0.c','lambda','sigma','N','n')
+nt <- 1 #thinning rate
 #can also monitor a different set of parameters with a different thinning rate
 parameters2 <- c("ID")
-nt2=50#thin more
+nt2 <- 50#thin more
 
 # Build the model, configure the mcmc, and compile
-start.time<-Sys.time()
+start.time <- Sys.time()
 Rmodel <- nimbleModel(code=NimModel, constants=constants, data=Nimdata,check=FALSE,
                       inits=Niminits)
 #can use "nodes" argument in configureMCMC below to omit y.true that is replaced below for faster
 #configuration
-conf <- configureMCMC(Rmodel,monitors=parameters, thin=nt,
-                      monitors2=parameters2,thin2=nt2,useConjugacy = TRUE) 
+config.nodes <- Rmodel$getNodeNames(stochOnly=TRUE)
+rem.idx <- grep("y.true",config.nodes)
+config.nodes <- config.nodes[-rem.idx]
+conf <- configureMCMC(Rmodel,monitors=parameters, thin=nt,nodes=config.nodes,
+                      monitors2=parameters2,thin2=nt2,useConjugacy = FALSE) 
 
 #conf$printSamplers() #shows the samplers used for each parameter and latent variable
 
@@ -89,11 +92,11 @@ conf <- configureMCMC(Rmodel,monitors=parameters, thin=nt,
 
 ##Here, we remove the default samplers for y.true and y.event, which are not correct
 #and replace it with the custom "IDSampler"
-conf$removeSampler("y.true")
+# conf$removeSampler("y.true") #don't need to remove if not assigned above
 #precalculate these
-n.jk=apply(nimbuild$y.true,c(2,3),sum) #
-n.ID.jk=apply(data$y.ID,c(2,3),sum)
-denom.choose=matrix(NA,J,K) #MVHyper denominator for all j,k
+n.jk <- apply(nimbuild$y.true,c(2,3),sum) #
+n.ID.jk <- apply(data$y.ID,c(2,3),sum)
+denom.choose <- matrix(NA,J,K) #MVHyper denominator for all j,k
 for(j in 1:J){
   for(k in 1:K){
     denom.choose[j,k]=NimChoose(n.jk[j,k],n.ID.jk[j,k])
@@ -137,22 +140,22 @@ Cmodel <- compileNimble(Rmodel)
 Cmcmc <- compileNimble(Rmcmc, project = Rmodel)
 
 # Run the model.
-start.time2<-Sys.time()
-Cmcmc$run(1000,reset=FALSE) #short run for demonstration. can keep running this line to get more samples
-end.time<-Sys.time()
+start.time2 <- Sys.time()
+Cmcmc$run(2000,reset=FALSE) #short run for demonstration. can keep running this line to get more samples
+end.time <- Sys.time()
 end.time-start.time  # total time for compilation, replacing samplers, and fitting
 end.time-start.time2 # post-compilation run time
 
 
-mvSamples = as.matrix(Cmcmc$mvSamples)
+mvSamples <- as.matrix(Cmcmc$mvSamples)
 plot(mcmc(mvSamples[100:nrow(mvSamples),]))
 
 data$n.cap #true number of captured individuals
 
 #look at ID posteriors. Not removing any burnin here...
-mvSamples2 = as.matrix(Cmcmc$mvSamples2)
+mvSamples2 <- as.matrix(Cmcmc$mvSamples2)
 
-check.sample=1
+check.sample <- 1
 #posterior prob this sample belongs to each individual number
 round(table(mvSamples2[,check.sample])/(nrow(mvSamples2)-1),2)
 #truth (for simulated data sets)

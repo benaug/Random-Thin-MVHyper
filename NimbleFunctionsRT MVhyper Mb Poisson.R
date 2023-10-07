@@ -35,9 +35,9 @@ dPoisson2D <- nimbleFunction(
         return(0)
       }
     }else{
-      J=nimDim(K2D)[1]
-      K=nimDim(K2D)[2]
-      logProb=matrix(NA,J,K)
+      J <- nimDim(K2D)[1]
+      K <- nimDim(K2D)[2]
+      logProb <- matrix(NA,J,K)
       for(j in 1:J){
         for(k in 1:K){
           if(K2D[j,k]>0){
@@ -57,9 +57,9 @@ dPoisson2D <- nimbleFunction(
 rPoisson2D <- nimbleFunction(
   run = function(n = integer(0),lam.p = double(1), lam.c=double(1), y.state = double(2), K2D=double(2), z = double(0)) {
     returnType(double(2))
-    J=nimDim(lam.p)[1]
-    K=nimDim(lam.p)[2]
-    out=matrix(nrow=J,ncol=K,value=0)
+    J <- nimDim(lam.p)[1]
+    K <- nimDim(lam.p)[2]
+    out <- matrix(nrow=J,ncol=K,value=0)
     return(out)
   }
 )
@@ -95,7 +95,7 @@ Getncap <- nimbleFunction(
 NimChoose <- nimbleFunction(
   run = function(n=double(0),k=double(0)){
     returnType(double(0))
-    out=(lfactorial(n)-lfactorial(k)-lfactorial(n-k))
+    out <- (lfactorial(n)-lfactorial(k)-lfactorial(n-k))
     return(exp(out))
   }
 )
@@ -124,7 +124,7 @@ IDSampler <- nimbleFunction(
     y.state <- model$y.state
     
     #precalculate match. Does sample l match individual i?
-    match=matrix(TRUE,nrow=n.samples,ncol=M) #start with all TRUE
+    match <- matrix(TRUE,nrow=n.samples,ncol=M) #start with all TRUE
     for(i in 1:M){#can match any individual
       if(z[i]==0){#unless z is off
         match[1:n.samples,i]=FALSE
@@ -157,7 +157,7 @@ IDSampler <- nimbleFunction(
           for(i in 1:M){
             # if(z[i]==1){
             if(model$capcounts[i]>0){ #can screen out more 0's using capcounts here. Can't use for proposed likelihood below bc not updated
-              prod.choose=prod.choose*NimChoose(y.true[i,j,k],y.ID[i,j,k])
+              prod.choose <- prod.choose*NimChoose(y.true[i,j,k],y.ID[i,j,k])
             }
           }
           ll.y.thin[j,k] <- log(prod.choose/denom.choose[j,k])
@@ -171,51 +171,51 @@ IDSampler <- nimbleFunction(
 
     ###update IDs
     for(l in 1:n.samples){#for all samples without known IDs
-      ID.cand=ID.curr
-      y.true.cand=y.true
-      y.state.cand=y.state
-      propprobs=model$lam.p[1:M,this.j[l]]
+      ID.cand <- ID.curr
+      y.true.cand <- y.true
+      y.state.cand <- y.state
+      propprobs <- model$lam.p[1:M,this.j[l]]
       for(i in 1:M){ #zero out nonmatches and z=0
         if(!match[l,i]){
-          propprobs[i]=0
+          propprobs[i] <- 0
         }
       }
       denom=sum(propprobs) #abort if propprobs sum to 0. No matches anywhere nearby.
       if(denom>0){
-        propprobs=propprobs/denom
-        ID.cand[l]=rcat(1,prob=propprobs)
+        propprobs <- propprobs/denom
+        ID.cand[l] <- rcat(1,prob=propprobs)
         if(ID.cand[l]!=ID.curr[l]){
-          swapped=c(ID.curr[l],ID.cand[l])
+          swapped <- c(ID.curr[l],ID.cand[l])
           #new sample proposal probabilities
-          forprob=propprobs[swapped[2]]
-          backprob=propprobs[swapped[1]]
+          forprob <- propprobs[swapped[2]]
+          backprob <- propprobs[swapped[1]]
           #new y.true's - move sample from ID to ID.cand
-          y.true.cand[ID.curr[l],this.j[l],this.k[l]]=y.true[ID.curr[l],this.j[l],this.k[l]]-1
-          y.true.cand[ID.cand[l],this.j[l],this.k[l]]=y.true[ID.cand[l],this.j[l],this.k[l]]+1
+          y.true.cand[ID.curr[l],this.j[l],this.k[l]] <- y.true[ID.curr[l],this.j[l],this.k[l]]-1
+          y.true.cand[ID.cand[l],this.j[l],this.k[l]] <- y.true[ID.cand[l],this.j[l],this.k[l]]+1
           #update y.state
           #first guy
           for(k in 1:K){
-            y.state.cand[swapped[1],this.j[l],k]=0
+            y.state.cand[swapped[1],this.j[l],k] <- 0
           }
-          hasSamps=sum(y.true.cand[swapped[1],this.j[l],])>0
+          hasSamps <- sum(y.true.cand[swapped[1],this.j[l],])>0
           if(hasSamps){
-            firstcap=which(y.true.cand[swapped[1],this.j[l],]>0)[1]
+            firstcap <- which(y.true.cand[swapped[1],this.j[l],]>0)[1]
             if(firstcap<K){
               for(k in (firstcap+1):K){
-                y.state.cand[swapped[1],this.j[l],k]=1
+                y.state.cand[swapped[1],this.j[l],k] <- 1
               }
             }
           }
           #second guy
           for(k in 1:K){
-            y.state.cand[swapped[2],this.j[l],k]=0
+            y.state.cand[swapped[2],this.j[l],k] <- 0
           }
-          hasSamps=sum(y.true.cand[swapped[2],this.j[l],])>0
+          hasSamps <- sum(y.true.cand[swapped[2],this.j[l],])>0
           if(hasSamps){
-            firstcap=which(y.true.cand[swapped[2],this.j[l],]>0)[1]
+            firstcap <- which(y.true.cand[swapped[2],this.j[l],]>0)[1]
             if(firstcap<K){
               for(k in (firstcap+1):K){
-                y.state.cand[swapped[2],this.j[l],k]=1
+                y.state.cand[swapped[2],this.j[l],k] <- 1
               }
             }
           }
@@ -224,21 +224,21 @@ IDSampler <- nimbleFunction(
           for(k in 1:K){#all k may change
             if(K2D[this.j[l],k]>0){
               if(y.state.cand[swapped[1],this.j[l],k]==0){
-                ll.y.cand[swapped[1],this.j[l],k]=dpois(y.true.cand[swapped[1],this.j[l],k],model$lam.p[swapped[1],this.j[l]],log=TRUE)
+                ll.y.cand[swapped[1],this.j[l],k] <- dpois(y.true.cand[swapped[1],this.j[l],k],model$lam.p[swapped[1],this.j[l]],log=TRUE)
               }else{
-                ll.y.cand[swapped[1],this.j[l],k]=dpois(y.true.cand[swapped[1],this.j[l],k],model$lam.c[swapped[1],this.j[l]],log=TRUE)
+                ll.y.cand[swapped[1],this.j[l],k] <- dpois(y.true.cand[swapped[1],this.j[l],k],model$lam.c[swapped[1],this.j[l]],log=TRUE)
               }
               if(y.state.cand[swapped[2],this.j[l],k]==0){
-                ll.y.cand[swapped[2],this.j[l],k]=dpois(y.true.cand[swapped[2],this.j[l],k],model$lam.p[swapped[2],this.j[l]],log=TRUE)
+                ll.y.cand[swapped[2],this.j[l],k] <- dpois(y.true.cand[swapped[2],this.j[l],k],model$lam.p[swapped[2],this.j[l]],log=TRUE)
               }else{
-                ll.y.cand[swapped[2],this.j[l],k]=dpois(y.true.cand[swapped[2],this.j[l],k],model$lam.c[swapped[2],this.j[l]],log=TRUE)
+                ll.y.cand[swapped[2],this.j[l],k] <- dpois(y.true.cand[swapped[2],this.j[l],k],model$lam.c[swapped[2],this.j[l]],log=TRUE)
               }
             }
           }
-          prod.choose=1
+          prod.choose <- 1
           for(i in 1:M){
             if(z[i]==1){#screening out some 0's by skipping z=0 here.
-              prod.choose=prod.choose*NimChoose(y.true.cand[i,this.j[l],this.k[l]],y.ID[i,this.j[l],this.k[l]])
+              prod.choose <- prod.choose*NimChoose(y.true.cand[i,this.j[l],this.k[l]],y.ID[i,this.j[l],this.k[l]])
             }
           }
           ll.y.thin.cand[this.j[l],this.k[l]] <- log(prod.choose/denom.choose[this.j[l],this.k[l]])
@@ -246,9 +246,9 @@ IDSampler <- nimbleFunction(
           #select sample to move proposal probabilities
           #P(select a sample of this type (not ID'd) for this ID)*P(select this j-k|sample of this type and this ID)
           #n.samples cancels out in MH ratio. Including for clarity
-          focalprob=(sum(ID.curr==swapped[1])/n.samples)*
+          focalprob <- (sum(ID.curr==swapped[1])/n.samples)*
             (y.true[swapped[1],this.j[l],this.k[l]] - y.ID[swapped[1],this.j[l],this.k[l]])/sum(y.true[swapped[1],1:J,1:K] - y.ID[swapped[1],1:J,1:K])
-          focalbackprob=(sum(ID.cand==swapped[2])/n.samples)*
+          focalbackprob <- (sum(ID.cand==swapped[2])/n.samples)*
             (y.true.cand[swapped[2],this.j[l],this.k[l]]- y.ID[swapped[2],this.j[l],this.k[l]])/sum(y.true.cand[swapped[2],1:J,1:K] - y.ID[swapped[2],1:J,1:K])
 
           #sum log likelihoods and do MH step
@@ -262,15 +262,15 @@ IDSampler <- nimbleFunction(
           accept <- decide(log_MH_ratio)
 
           if(accept){
-            y.true[swapped[1],this.j[l],this.k[l]]=y.true.cand[swapped[1],this.j[l],this.k[l]]
-            y.true[swapped[2],this.j[l],this.k[l]]=y.true.cand[swapped[2],this.j[l],this.k[l]]
-            y.state[swapped[1],this.j[l],]=y.state.cand[swapped[1],this.j[l],]
-            y.state[swapped[2],this.j[l],]=y.state.cand[swapped[2],this.j[l],]
-            ll.y[swapped[1],this.j[l],]=ll.y.cand[swapped[1],this.j[l],]
-            ll.y[swapped[2],this.j[l],]=ll.y.cand[swapped[2],this.j[l],]
-            ll.y.thin[this.j[l],this.k[l]]=ll.y.thin.cand[this.j[l],this.k[l]]
-            ll.y.thin[this.j[l],this.k[l]]=ll.y.thin.cand[this.j[l],this.k[l]]
-            ID.curr[l]=ID.cand[l]
+            y.true[swapped[1],this.j[l],this.k[l]] <- y.true.cand[swapped[1],this.j[l],this.k[l]]
+            y.true[swapped[2],this.j[l],this.k[l]] <- y.true.cand[swapped[2],this.j[l],this.k[l]]
+            y.state[swapped[1],this.j[l],] <- y.state.cand[swapped[1],this.j[l],]
+            y.state[swapped[2],this.j[l],] <- y.state.cand[swapped[2],this.j[l],]
+            ll.y[swapped[1],this.j[l],] <- ll.y.cand[swapped[1],this.j[l],]
+            ll.y[swapped[2],this.j[l],] <- ll.y.cand[swapped[2],this.j[l],]
+            ll.y.thin[this.j[l],this.k[l]] <- ll.y.thin.cand[this.j[l],this.k[l]]
+            ll.y.thin[this.j[l],this.k[l]] <- ll.y.thin.cand[this.j[l],this.k[l]]
+            ID.curr[l] <- ID.cand[l]
           }
         }
       }
