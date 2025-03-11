@@ -104,10 +104,10 @@ IDSampler <- nimbleFunction(
     y.true <- model$y.true
     
     #precalculate match. Does sample l match individual i?
-    match=matrix(TRUE,nrow=n.samples,ncol=M) #start with all TRUE
+    match <- matrix(TRUE,nrow=n.samples,ncol=M) #start with all TRUE
     for(i in 1:M){#can match any individual
       if(z[i]==0){#unless z is off
-        match[1:n.samples,i]=FALSE
+        match[1:n.samples,i] <- FALSE
       }
     }
     
@@ -144,9 +144,9 @@ IDSampler <- nimbleFunction(
     ID.curr <- model$ID
 
     ###update IDs
+    ID.cand <- ID.curr
+    y.true.cand <- y.true
     for(l in 1:n.samples){#for all samples without known IDs
-      ID.cand <- ID.curr
-      y.true.cand <- y.true
       propprobs <- model$lam[1:M,this.j[l]]
       for(i in 1:M){ #zero out nonmatches and z=0
         if(!match[l,i]){
@@ -195,13 +195,18 @@ IDSampler <- nimbleFunction(
           accept <- decide(log_MH_ratio)
           
           if(accept){
-            y.true[swapped[1],this.j[l],this.k[l]]=y.true.cand[swapped[1],this.j[l],this.k[l]]
-            y.true[swapped[2],this.j[l],this.k[l]]=y.true.cand[swapped[2],this.j[l],this.k[l]]
-            ll.y[swapped[1],this.j[l],this.k[l]]=ll.y.cand[swapped[1],this.j[l],this.k[l]]
-            ll.y[swapped[2],this.j[l],this.k[l]]=ll.y.cand[swapped[2],this.j[l],this.k[l]]
-            ll.y.thin[this.j[l],this.k[l]]=ll.y.thin.cand[this.j[l],this.k[l]]
-            ll.y.thin[this.j[l],this.k[l]]=ll.y.thin.cand[this.j[l],this.k[l]]
-            ID.curr[l]=ID.cand[l]
+            y.true[swapped[1],this.j[l],this.k[l]] <- y.true.cand[swapped[1],this.j[l],this.k[l]]
+            y.true[swapped[2],this.j[l],this.k[l]] <- y.true.cand[swapped[2],this.j[l],this.k[l]]
+            ll.y[swapped[1],this.j[l],this.k[l]] <- ll.y.cand[swapped[1],this.j[l],this.k[l]]
+            ll.y[swapped[2],this.j[l],this.k[l]] <- ll.y.cand[swapped[2],this.j[l],this.k[l]]
+            ll.y.thin[this.j[l],this.k[l]] <- ll.y.thin.cand[this.j[l],this.k[l]]
+            ll.y.thin[this.j[l],this.k[l]] <- ll.y.thin.cand[this.j[l],this.k[l]]
+            ID.curr[l] <- ID.cand[l]
+          }else{
+            #set these back.
+            y.true.cand[swapped[1],this.j[l],this.k[l]] <- y.true[swapped[1],this.j[l],this.k[l]]
+            y.true.cand[swapped[2],this.j[l],this.k[l]] <- y.true[swapped[2],this.j[l],this.k[l]]
+            ID.cand[l] <- ID.curr[l]
           }
         }
       }

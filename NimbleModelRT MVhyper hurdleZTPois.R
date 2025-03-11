@@ -1,11 +1,11 @@
 NimModel <- nimbleCode({
   #detection function priors
-  p0~dunif(0,1)
-  sigma~dunif(0,20)
+  p0 ~ dunif(0,1)
+  sigma ~ dunif(0,20)
   #sample deposition rate prior
-  lambda~dunif(0,20)
+  lambda ~ dunif(0,20)
   #data augmentation prior
-  psi~dunif(0,1)
+  psi ~ dunif(0,1)
   #likelihoods (except for s priors)
   for(i in 1:M) {
     z[i] ~ dbern(psi)

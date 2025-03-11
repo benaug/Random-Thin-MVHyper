@@ -1,10 +1,10 @@
 NimModel <- nimbleCode({
   #detection function priors
-  lam0.p~dunif(0,20)
-  lam0.c~dunif(0,20)
-  sigma~dunif(0,20)
+  lam0.p ~ dunif(0,20)
+  lam0.c ~ dunif(0,20)
+  sigma ~ dunif(0,20)
   #data augmentation prior
-  psi~dunif(0,1)
+  psi ~ dunif(0,1)
   #likelihoods (except for s priors)
   for(i in 1:M){
     z[i] ~ dbern(psi)
