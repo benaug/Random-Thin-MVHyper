@@ -51,6 +51,7 @@ inits <- list(p0.p=0.5,p0.c=0.5,sigma=0.25,lambda=1) #ballpark inits to build da
 #This function structures the simulated data to fit the model in Nimble (some more restructing below)
 #Also checks some inits
 nimbuild <- init.RT.MVhyper.Mb(data,inits,M=M,obstype="hurdleZTPois")
+capcounts.ID <- rowSums(nimbuild$y.ID)
 
 #inits for nimble
 Niminits <- list(z=nimbuild$z,s=nimbuild$s,ID=nimbuild$ID,capcounts=rowSums(nimbuild$y.true),
@@ -65,7 +66,7 @@ constants <- list(M=M,J=J,K=K,K2D=K2D,n.samples=nimbuild$n.samples,xlim=data$xli
 z.data=c(rep(1,data$n.ID),rep(NA,M-data$n.ID))
 
 Nimdata <- list(y.true=array(NA,dim=c(M,J,K)),y.state=array(NA,dim=c(M,J,K)),
-              ID=rep(NA,nimbuild$n.samples),z=z.data,X=as.matrix(X),capcounts=rep(NA,M))
+              ID=rep(NA,nimbuild$n.samples),z=z.data,X=as.matrix(X),capcounts=rep(NA,M),capcounts.ID=capcounts.ID)
 
 # set parameters to monitor
 parameters <- c('psi','p0.p','p0.c','lambda','sigma','N','n')

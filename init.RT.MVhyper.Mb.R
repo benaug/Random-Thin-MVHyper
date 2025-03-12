@@ -6,29 +6,29 @@ e2dist<- function (x, y){
 
 init.RT.MVhyper.Mb=function(data,inits=NA,M=NA,obstype="poisson"){
   library(abind)
-  y.ID=data$y.ID
-  this.j=data$this.j
-  this.k=data$this.k
-  X<-as.matrix(data$X)
-  J<-nrow(X)
-  K<- dim(y.ID)[3]
-  buff<- data$buff
-  n.ID=data$n.ID
-  K2D=data$K2D
+  y.ID <- data$y.ID
+  this.j <- data$this.j
+  this.k <- data$this.k
+  X <- as.matrix(data$X)
+  J <- nrow(X)
+  K <- dim(y.ID)[3]
+  buff <- data$buff
+  n.ID <- data$n.ID
+  K2D <- data$K2D
   
   #data checks
   if(length(dim(y.ID))!=3){
     stop("dim(y.ID) must be 3. Reduced to 2 during initialization")
   }
 
-  buff<- data$buff
-  xlim<- c(min(X[,1]),max(X[,1]))+c(-buff, buff)
-  ylim<- c(min(X[,2]),max(X[,2]))+c(-buff, buff)
+  buff <- data$buff
+  xlim <- c(min(X[,1]),max(X[,1]))+c(-buff, buff)
+  ylim <- c(min(X[,2]),max(X[,2]))+c(-buff, buff)
   
   ##pull out initial values
-  lam0.p=inits$lam0.p
-  lam0.c=inits$lam0.c
-  sigma=inits$sigma
+  lam0.p <- inits$lam0.p
+  lam0.c <- inits$lam0.c
+  sigma <- inits$sigma
   
   #initialize IDs
   #This initialization algorithm matches samples with consistent G.noID to same ID if they are caught

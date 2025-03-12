@@ -15,7 +15,7 @@ NimModel <- nimbleCode({
     y.true[i,1:J,1:K] ~ dHurdleZTPoisVector(pd=pd[i,1:J],K2D=K2D[1:J,1:K],z=z[i],lambda=lambda) #vectorized obs mod
   }
   #derived variables
-  capcounts[1:M] <- Getcapcounts(y.true=y.true[1:M,1:J,1:K]) #intermediate object to derive n
-  n <- Getncap(capcounts=capcounts[1:M],ID=ID[1:n.samples]) #number of captured individuals
+  capcounts[1:M] <- Getcapcounts(ID=ID[1:n.samples],M=M,capcounts.ID=capcounts.ID[1:M]) #intermediate object
+  n <- Getncap(capcounts=capcounts[1:M]) #number of captured individuals
   N <- sum(z[1:M])
 })# end model
