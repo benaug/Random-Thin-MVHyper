@@ -19,3 +19,4 @@ https://onlinelibrary.wiley.com/doi/full/10.1002/ece3.1748
 If anyone wants to use this model and needs help, let me know--I think there is a paper to be written here.
 
 Version with spatial density covariates uses count prior data augmentation: https://github.com/benaug/SCR-Count-Prior-Data-Augmentation
+
